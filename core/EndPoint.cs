@@ -1,14 +1,21 @@
 namespace web_app_scratch.Core;
 
-public class EndPoint(string method, string path, Delegate handler)
+public class Endpoint
 {
-    private readonly string Path = path;
-    private readonly string Method = method;
-    public readonly Delegate Handler = handler;
+    private readonly string Path;
+    private readonly string Method;
+    public readonly Delegate Handler;
+
+    public Endpoint(string path, string method, Delegate handler)
+    {
+        Path = path;
+        Method = method;
+        Handler = handler;
+    }
 
     public bool Matches(RequestContext context)
     {
-        return context.path.StartsWith(path) &&
-        context.method.Equals(Method, StringComparison.OrdinalIgnoreCase);
+        return context.path.StartsWith(Path) &&
+               context.method.Equals(Method, StringComparison.OrdinalIgnoreCase);
     }
 }

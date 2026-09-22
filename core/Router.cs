@@ -2,20 +2,30 @@ namespace web_app_scratch.Core;
 
 public class Router
 {
-    private readonly List<EndPoint> _endpoints = [];
+    private readonly List<Endpoint> _endpoints = [];
 
-    public EndPoint MapGet(string path, Delegate handler)
+    public Endpoint MapGet(string path, Delegate handler)
     {
-        var endpoint = new EndPoint(path, "GET", handler);
+        Console.WriteLine($"[Router] MapGet called: GET {path}");
+        var endpoint = new Endpoint(path, "GET", handler);
         _endpoints.Add(endpoint);
+        Console.WriteLine($"[Router] total endpoints: {_endpoints.Count}");
         return endpoint;
     }
 
     public string Resolve(RequestContext context)
     {
-        var endpoint = _endpoints.FirstOrDefault(ep => ep.Matches(context));
-        if (endpoint is null) return "404 not found";
+        Console.WriteLine($"[Router] Resolve: {context.method} {context.path}");
+        Console.WriteLine($"[Router] endpoints count: {_endpoints.Count}");
 
+        var endpoint = _endpoints.FirstOrDefault(ep => ep.Matches(context));
+        if (endpoint is null)
+        {
+            Console.WriteLine("[Router] NO MATCH -> 404");
+            return "404 not found";
+        }
+
+        Console.WriteLine("[Router] MATCHED!");
         var method = endpoint.Handler.Method;
         var args = new object?[1];
         args[0] = context;
