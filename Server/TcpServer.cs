@@ -8,11 +8,11 @@ namespace web_app_scratch;
 public class TcpServer
 {
     private readonly int _port;
-    private readonly Router _router;
-    public TcpServer(int port, Router router)
+    private readonly Func<RequestContext, Task> _pipeline;
+    public TcpServer(int port, Func<RequestContext, Task> pipeline)
     {
         _port = port;
-        _router = router;
+        _pipeline = pipeline;
     }
     public async Task StartAsync()
     {
@@ -34,7 +34,9 @@ public class TcpServer
         var context = HttpHeaderParser.Parse(rawHeader);
         context.Body = HttpBodyParser.Parse(rawBody);
 
-        var response = _router.Resolve(context);
+        // Router-এর বদলে এখন pipeline call করি
+        await _pipeline(context);
+        var response = context.Response ?? "Ok";
 
         var responseInByte = Encoding.UTF8.GetBytes(
             "HTTP/1.1 200 OK \r\n" +
@@ -43,6 +45,6 @@ public class TcpServer
             response
         );
         await stream.WriteAsync((ReadOnlyMemory<byte>)responseInByte);
-        
+
     }
 }

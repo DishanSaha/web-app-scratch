@@ -7,5 +7,6 @@ public class RequestContext
     public string version { get; set; } = string.Empty;
     public Dictionary<string, string> Headers { get; set; } = new();
     public string? Body { get; set; }
+    public string? Response { get; set; }
 
 }
