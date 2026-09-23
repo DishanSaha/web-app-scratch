@@ -2,6 +2,7 @@
 using web_app_scratch;
 using web_app_scratch.Core;
 
+
 // ---- Middleware definitions ----
 async Task Logging(RequestContext ctx, Func<RequestContext, Task> next)
 {
@@ -19,6 +20,8 @@ async Task Timing(RequestContext ctx, Func<RequestContext, Task> next)
 }
 
 
+
+
 // ---- App setup ----
 var builder = WebApplicationFactory.CreateBuilder();
 builder.Services.AddTransient<ITest, Test>();
@@ -29,6 +32,12 @@ app.MapGet("/test", (RequestContext context) =>
     var test = app.Services.GetRequiredService<ITest>();
     test.Log();
     return "Ok";
+});
+
+// Typed parameter — Model Binder দিয়ে bind হবে
+app.MapGet("/users", (User user) =>
+{
+    return $"User: {user.Name}, Age: {user.Age}";
 });
 
 await app.RunAsync(5005);

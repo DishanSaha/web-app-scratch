@@ -1,8 +1,16 @@
 namespace web_app_scratch.Core;
 
+using web_app_scratch.ModelBinder;
+
 public class Router
 {
     private readonly List<Endpoint> _endpoints = [];
+    private readonly HandlerInvoker _invoker;
+
+    public Router(HandlerInvoker invoker)
+    {
+        _invoker = invoker;
+    }
 
     public Endpoint MapGet(string path, Delegate handler)
     {
@@ -19,18 +27,19 @@ public class Router
         Console.WriteLine($"[Router] endpoints count: {_endpoints.Count}");
 
         var endpoint = _endpoints.FirstOrDefault(ep => ep.Matches(context));
-        if (endpoint is null)
-        {
-            Console.WriteLine("[Router] NO MATCH -> 404");
-            return "404 not found";
-        }
+        if (endpoint is null) return "404 not found";
 
-        Console.WriteLine("[Router] MATCHED!");
-        var method = endpoint.Handler.Method;
-        var args = new object?[1];
-        args[0] = context;
-        var result = method.Invoke(endpoint.Handler.Target, args);
-        return result?.ToString() ?? "";
+        // Console.WriteLine("[Router] MATCHED!");
+        // var method = endpoint.Handler.Method;
+        // var args = new object?[1];
+        // args[0] = context;
+        // var result = method.Invoke(endpoint.Handler.Target, args);
+        // return result?.ToString() ?? "";
+        return _invoker.InvokeMethod(
+            endpoint.Handler.Method,
+            endpoint.Handler.Target,
+            context;
+        )
     }
 }
 

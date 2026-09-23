@@ -3,6 +3,7 @@ using web_app_scratch.DI;
 namespace web_app_scratch.Core;
 
 using web_app_scratch.Middleware;
+using web_app_scratch.ModelBinder;
 
 internal class MiniWebApplicationBuilder
 {
@@ -20,12 +21,19 @@ internal class WebApplicationFactory
     => new MiniWebApplicationBuilder();
 }
 
-internal class MiniWebApplication(ServiceProvider services)
+internal class MiniWebApplication
 {
-    public readonly ServiceProvider Services = services;
-    private readonly Router _router = new();
+    public readonly ServiceProvider Services;
+    private readonly Router _router;
     private readonly PipelineBuilder _pipelineBuilder = new();
 
+
+    public MiniWebApplication(ServiceProvider services)
+    {
+        Services = services;
+        var invoker = new HandlerInvoker(services);
+        _router = new Router(invoker);
+    }
     public web_app_scratch.Core.Endpoint MapGet(string pattern, Delegate handler)
     {
         return _router.MapGet(pattern, handler);
