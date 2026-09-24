@@ -38,6 +38,17 @@ internal class MiniWebApplication
     {
         return _router.MapGet(pattern, handler);
     }
+    public Endpoint MapPost(string pattern, Delegate handler)
+    {
+        return _router.MapPost(pattern, handler);
+    }
+
+    // New Controller Add----
+    public MiniWebApplication AddControllers(params Type[] controllerTypes)
+    {
+        _router.RegisterControllers(controllerTypes);
+        return this;
+    }
 
     // Middleware part---
     public MiniWebApplication Use(MiddlewareDelegate middleware)

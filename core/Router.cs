@@ -12,37 +12,49 @@ public class Router
         _invoker = invoker;
     }
 
+
+    // Lambda registration 
     public Endpoint MapGet(string path, Delegate handler)
     {
-        Console.WriteLine($"[Router] MapGet called: GET {path}");
+        // Console.WriteLine($"[Router] MapGet called: GET {path}");
         var endpoint = new Endpoint(path, "GET", handler);
         _endpoints.Add(endpoint);
-        Console.WriteLine($"[Router] total endpoints: {_endpoints.Count}");
+        // Console.WriteLine($"[Router] total endpoints: {_endpoints.Count}");
         return endpoint;
     }
-
+    public Endpoint MapPost(string path, Delegate handler)
+    {
+        var endpoint = new Endpoint(path, "POST", handler);
+        _endpoints.Add(endpoint);
+        return endpoint;
+    }
+    // Controller registration
+    public void RegisterControllers(params Type[] controllerTypes)
+    {
+        var endpoints = ControllerDiscovery.Discover(controllerTypes);
+        _endpoints.AddRange(endpoints);
+    }
     public string Resolve(RequestContext context)
     {
-        Console.WriteLine($"[Router] Resolve: {context.method} {context.path}");
-        Console.WriteLine($"[Router] endpoints count: {_endpoints.Count}");
+        // Console.WriteLine($"[Router] Resolve: {context.method} {context.path}");
+        // Console.WriteLine($"[Router] endpoints count: {_endpoints.Count}");
 
         var endpoint = _endpoints.FirstOrDefault(ep => ep.Matches(context));
         if (endpoint is null) return "404 not found";
 
-        // Console.WriteLine("[Router] MATCHED!");
-        // var method = endpoint.Handler.Method;
-        // var args = new object?[1];
-        // args[0] = context;
-        // var result = method.Invoke(endpoint.Handler.Target, args);
-        // return result?.ToString() ?? "";
         return _invoker.InvokeMethod(
-            endpoint.Handler.Method,
-            endpoint.Handler.Target,
-            context;
-        )
+            endpoint.ActionMethod,
+            endpoint.Target,
+            context
+        );
     }
 }
 
+// Router = Route register করা + incoming request
+// -এর জন্য matching Endpoint খুঁজে বের করা + handler execute করানো।
+
+
+// ******/ Lamda/Delegate based--*****
 // RequestContext
 //       │
 //       ▼
@@ -83,3 +95,38 @@ public class Router
 // 3. Invoke()
 //       ↓
 //    সেই Endpoint-এর Handler execute করে
+
+
+
+
+// #### Controller Based #######---
+        //             ROUTE REGISTRATION
+        //                    │
+        //      ┌─────────────┴─────────────┐
+        //      │                           │
+        // MapGet/MapPost             RegisterControllers
+        //      │                           │
+        //   Delegate              ControllerDiscovery
+        //      │                           │
+        //      └─────────────┬─────────────┘
+        //                    ↓
+        //               List<Endpoint>
+        //                    │
+        //                    │
+        //             Incoming Request
+        //                    ↓
+        //                 Router
+        //                    ↓
+        //              Resolve(context)
+        //                    ↓
+        //            Endpoint.Matches()
+        //                    │
+        //             ┌──────┴──────┐
+        //             │             │
+        //           Match         No match
+        //             │             │
+        //             ↓             ↓
+        //       HandlerInvoker    404
+        //             │
+        //             ↓
+        //        Execute Method
